@@ -50,5 +50,27 @@ a = np.array([[1, 3], [7, 0]])
 
 # print(.1*np.identity(3))
 
-b = [1, 2, 3]
-print(np.sum(np.square(b)))
+# b = [1, 2, 3]
+# print(np.sum(np.square(b)))
+#
+#
+# a = [1, 0, 0, 2, 0, 5, 8]
+# print(np.count_nonzero(a))
+
+a = np.array([5,3,4,7])
+a.sort()
+print(a[0:2])
+v = 5
+file = open("testfile.txt", "w")
+
+
+
+file.write("\n")
+
+file.write("sdfsdasfas\n")
+
+file.write("sdfsdasfas")
+
+
+
+file.close()

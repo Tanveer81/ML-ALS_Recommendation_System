@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.model_selection import train_test_split
 import scipy
+import time
 
-
-def als(train, k, x_train, lmb, lmbu, lmbv):
+def als(train, k, iteration, x_train, lmbu, lmbv):
     print("In ALS")
     # print(train)
     matrix = np.matrix(train)
@@ -33,9 +33,9 @@ def als(train, k, x_train, lmb, lmbu, lmbv):
     # print(V.shape)
     # print(V)
 
-    for qq in range(0, 150):
-        print(qq)
-        print(matrix)
+    for qq in range(0, iteration):
+        # print(qq)
+        # print(matrix)
         # print("Starting Item Loop")
         for i in range(0, m):
             # print(i)
@@ -55,7 +55,7 @@ def als(train, k, x_train, lmb, lmbu, lmbv):
             # print(j.shape)
             # print(j)
             # I = lmb * np.identity(k)
-            vm = np.matmul(np.linalg.inv(np.matmul(u.T, u) + lmb * np.identity(k)), np.matmul(u.T, xm))
+            vm = np.matmul(np.linalg.inv(np.matmul(u.T, u) + lmbv * np.identity(k)), np.matmul(u.T, xm))
             # print(vm.shape)
             # print("vm ")
             # print(vm)
@@ -88,8 +88,9 @@ def als(train, k, x_train, lmb, lmbu, lmbv):
             # print(j.shape)
             # print(j)
             # I = lmb * np.identity(k)
-            un = np.matmul(np.linalg.inv(np.matmul(v.T, v) + lmb * np.identity(k)), np.matmul(v.T, xn))
-            # print(un.shape)
+            un = np.matmul(np.linalg.inv(np.matmul(v.T, v) + lmbu * np.identity(k)), np.matmul(v.T, xn))
+            # print("un shape")
+            # print(un[0].shape)
             # print("un ")
             # print(un)
             U[i] = un
@@ -100,7 +101,7 @@ def als(train, k, x_train, lmb, lmbu, lmbv):
         # print(U[0])
         # print(V[:,0])
         # print(np.matmul(U[0],V[:,0]))
-        print("Calculating Error")
+        # print("Calculating Error")
         temp_loss = 0
         for i in range(0, n):
             for j in range(0, m):
@@ -114,34 +115,162 @@ def als(train, k, x_train, lmb, lmbu, lmbv):
         for i in range(0, m):
             temp_loss += np.sum(np.square(V[:, j]))
 
+        # print("Loss")
+        # print(temp_loss)
+
+        if np.abs(loss - temp_loss) < .01:
+            break
+
+    return V
+
+
+def validation(V, k, train, valid, x_train, x_val, lmbu, lmbv, q):
+    if q == 1:
+        print("Validation")
+    elif q == 2:
+        print("Test")
+    elif q == 3:
+        print("recommend")
+    # print(x_val)
+    # print(valid)
+    # matrix2 = np.matrix(train)
+    matrix = np.matrix(valid)
+    # print(matrix)
+    # print(np.count_nonzero(matrix))
+    unique_product = x_train['itemID'].unique()
+    unique_user = x_train['reviewerID'].unique()
+    unique_product2 = x_val['itemID'].unique()
+    unique_user2 = x_val['reviewerID'].unique()
+    # n = (unique_user.shape[0])
+    # m = (unique_product.shape[0])
+    n = (unique_user2.shape[0])
+    m = (unique_product2.shape[0])
+    U = np.random.rand(n, k)
+
+
+    len = 0
+
+    for i in unique_product:
+        # print(i)
+        if i not in unique_product2:
+            len = len + 1
+
+    z = np.zeros((k, len))
+    V = np.append(V, z, axis=1)
+
+    for i in range(0, n):
+        # print(i)
+        b = matrix[:, i]
+        # print(b)
+        b = np.array(b.T)
+        # print(b)
+        z = np.where(b[0] != 0)[0]
+        xn = b[0][z]
+        # print(z)
+        # print(xn)
+        v = V.T[z, :]
+        # print(v)
+        # print("v.shape")
+        # print(v.shape)
+        # print("vT.v")
+        # j = np.matmul(v.T, v)
+        # print(j.shape)
+        # print(j)
+        # I = lmb * np.identity(k)
+        un = np.matmul(np.linalg.inv(np.matmul(v.T, v) + lmbu * np.identity(k)), np.matmul(v.T, xn))
+        # print("un shape")
+        # print(un[0].shape)
+        # print("un ")
+        # print(un)
+        U[i] = un
+
+
+    if q != 3:
+        temp_loss = 0
+        for i in range(0, n):
+            for j in range(0, m):
+                d = np.matmul(U[i], V[:, j])
+                if matrix[j, i] != 0:
+                    temp_loss += (matrix[j, i] - d) ** 2
+
+        temp_loss = temp_loss / np.count_nonzero(matrix)
+
         print("Loss")
         print(temp_loss)
 
+    else:
+        result = []
+        for j in range(0, m):
+            d = np.matmul(U[0], V[:, j])
+            print(d)
+            if d < 0:
+                d = 0
+            if d > 5:
+                d = 5
+            result.append(d)
+        result.sort()
 
+        print("Recommending Products")
+        print(result)
 
 
 
 def main():
+    k = 20
+    lmbu = .1
+    lmbv = .1
     np.random.seed(5)
-    df = pd.read_csv("train.csv")
-    df = df[:10]
+    x_train = pd.read_csv("traincustom.csv")
+    # df = df[:10]
+    x_val = pd.read_csv("validcustom.csv")
+    x_test = pd.read_csv("recommend.csv")
+    x_rec = pd.read_csv("recommend.csv")
     # print(df.shape)
     # print(df)
-
-    # myset = set(df[:, 0])
-
-    x_train, x_temp = train_test_split(df, test_size=0.4)
+    # myset = set(df[:, 0]
+    # x_train, x_temp = train_test_split(df, test_size=0.4)
     # print(x_train.shape)
     # print(x_temp.shape)
-
-    x_test, x_val = train_test_split(x_temp, test_size=0.5)
+    # x_test, x_val = train_test_split(x_temp, test_size=0.5)
     # print(x_test.shape)
     # print(x_val.shape)
-
     train = x_train.pivot_table(columns=['reviewerID'], index=['itemID'], values='rating')
     train.fillna(value=0, inplace=True)
-    print(train)
-    als(train, 2, x_train, .1, .1, .1)
+    # print("printing training data")
+    # print(train)
+
+
+
+#   trining
+#   als(train, k, iteration, x_train, lmbu, lmbv)
+    for k in [10, 20, 30, 40, 50]:
+        print("K ")
+        print(k)
+        for l in [.01, .1, 1, 10]:
+            print("Rate ")
+            print(l)
+            V = als(train, k, 100, x_train, l, l)
+            # validation
+            valid = x_val.pivot_table(columns=['reviewerID'], index=['itemID'], values='rating')
+            valid.fillna(value=0, inplace=True)
+            # print("printing validation data")
+            # print(valid)
+            validation(V, k, train, valid, x_train, x_val, l, l, 1)
+
+        #   test
+            test = x_test.pivot_table(columns=['reviewerID'], index=['itemID'], values='rating')
+            test.fillna(value=0, inplace=True)
+            # print("printing test data")
+            # print(test)
+            validation(V, k, train, test, x_train, x_test, l, l, 2)
+            time.sleep(120)
+
+# #   rec
+#     rec = x_rec.pivot_table(columns=['reviewerID'], index=['itemID'], values='rating')
+#     rec.fillna(value=0, inplace=True)
+#     # print("printing test data")
+#     # print(test)
+#     validation(V, k, train, rec, x_train, x_rec, lmbu, lmbv, 3)
 
 
 if __name__ == "__main__":
