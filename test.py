@@ -2,6 +2,8 @@ import numpy as np
 
 b = np.array([[0, 2], [0, 4]])
 a = np.array([[1, 3], [7, 0]])
+
+
 # i = np.where(b == 0)[0]
 # print(i)
 # c = b[i]
@@ -57,20 +59,39 @@ a = np.array([[1, 3], [7, 0]])
 # a = [1, 0, 0, 2, 0, 5, 8]
 # print(np.count_nonzero(a))
 
-a = np.array([5,3,4,7])
-a.sort()
-print(a[0:2])
-v = 5
-file = open("testfile.txt", "w")
+# a = np.array([5,3,4,7])
+# a.sort()
+# print(a[0:2])
+# v = 5
+# file = open("testfile.txt", "w")
+#
+#
+#
+# file.write("\n")
+#
+# file.write("sdfsdasfas\n")
+#
+# file.write("sdfsdasfas")
 
 
+# file.close()
 
-file.write("\n")
-
-file.write("sdfsdasfas\n")
-
-file.write("sdfsdasfas")
+def getKey(item):
+    return item[0]
 
 
+from operator import itemgetter
 
-file.close()
+result = []
+pair = (11, .51)
+result.append(pair)
+pair = (1, .5)
+result.append(pair)
+pair = (111, .511)
+result.append(pair)
+
+print(result)
+
+result.sort(key=itemgetter(1), reverse=True)
+
+print(result[0:2])

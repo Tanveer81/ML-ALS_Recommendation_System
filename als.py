@@ -4,6 +4,8 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 import scipy
 import time
+from operator import itemgetter
+
 
 def als(train, k, iteration, x_train, lmbu, lmbv):
     print("In ALS")
@@ -142,11 +144,10 @@ def validation(V, k, train, valid, x_train, x_val, lmbu, lmbv, q):
     unique_product2 = x_val['itemID'].unique()
     unique_user2 = x_val['reviewerID'].unique()
     # n = (unique_user.shape[0])
-    # m = (unique_product.shape[0])
+    m2 = (unique_product.shape[0])
     n = (unique_user2.shape[0])
     m = (unique_product2.shape[0])
     U = np.random.rand(n, k)
-
 
     len = 0
 
@@ -184,7 +185,6 @@ def validation(V, k, train, valid, x_train, x_val, lmbu, lmbv, q):
         # print(un)
         U[i] = un
 
-
     if q != 3:
         temp_loss = 0
         for i in range(0, n):
@@ -194,31 +194,32 @@ def validation(V, k, train, valid, x_train, x_val, lmbu, lmbv, q):
                     temp_loss += (matrix[j, i] - d) ** 2
 
         temp_loss = temp_loss / np.count_nonzero(matrix)
+        temp_loss = temp_loss ** .5
 
         print("Loss")
         print(temp_loss)
 
     else:
         result = []
-        for j in range(0, m):
+        for j in range(0, m2):
             d = np.matmul(U[0], V[:, j])
-            print(d)
+            # print(d)
             if d < 0:
                 d = 0
             if d > 5:
                 d = 5
-            result.append(d)
-        result.sort()
+            result.append((j, d))
+        result.sort(key=itemgetter(1), reverse=True)
 
         print("Recommending Products")
-        print(result)
-
+        print(result[0:10])
 
 
 def main():
     k = 20
     lmbu = .1
     lmbv = .1
+    l = .1
     np.random.seed(5)
     x_train = pd.read_csv("traincustom.csv")
     # df = df[:10]
@@ -239,38 +240,39 @@ def main():
     # print("printing training data")
     # print(train)
 
+    #   trining
+    #   als(train, k, iteration, x_train, lmbu, lmbv)
+    #     for k in [10, 20, 30, 40, 50]:
+    #         print("K ")
+    #         print(k)
+    #         for l in [.01, .1, 1, 10]:
+    #             print("Rate ")
+    #             print(l)
+    V = als(train, k, 2, x_train, l, l)
+    # validation
+    valid = x_val.pivot_table(columns=['reviewerID'], index=['itemID'], values='rating')
+    valid.fillna(value=0, inplace=True)
+    # print("printing validation data")
+    # print(valid)
+    validation(V, k, train, valid, x_train, x_val, l, l, 1)
 
+    #   test
+    test = x_test.pivot_table(columns=['reviewerID'], index=['itemID'], values='rating')
+    test.fillna(value=0, inplace=True)
+    # print("printing test data")
+    # print(test)
+    validation(V, k, train, test, x_train, x_test, l, l, 2)
+    # time.sleep(120)
+    d = x_train['itemID']
+    print(d)
 
-#   trining
-#   als(train, k, iteration, x_train, lmbu, lmbv)
-    for k in [10, 20, 30, 40, 50]:
-        print("K ")
-        print(k)
-        for l in [.01, .1, 1, 10]:
-            print("Rate ")
-            print(l)
-            V = als(train, k, 100, x_train, l, l)
-            # validation
-            valid = x_val.pivot_table(columns=['reviewerID'], index=['itemID'], values='rating')
-            valid.fillna(value=0, inplace=True)
-            # print("printing validation data")
-            # print(valid)
-            validation(V, k, train, valid, x_train, x_val, l, l, 1)
-
-        #   test
-            test = x_test.pivot_table(columns=['reviewerID'], index=['itemID'], values='rating')
-            test.fillna(value=0, inplace=True)
-            # print("printing test data")
-            # print(test)
-            validation(V, k, train, test, x_train, x_test, l, l, 2)
-            time.sleep(120)
 
 # #   rec
-#     rec = x_rec.pivot_table(columns=['reviewerID'], index=['itemID'], values='rating')
-#     rec.fillna(value=0, inplace=True)
+    rec = x_rec.pivot_table(columns=['reviewerID'], index=['itemID'], values='rating')
+    rec.fillna(value=0, inplace=True)
 #     # print("printing test data")
 #     # print(test)
-#     validation(V, k, train, rec, x_train, x_rec, lmbu, lmbv, 3)
+    validation(V, k, train, rec, x_train, x_rec, lmbu, lmbv, 3)
 
 
 if __name__ == "__main__":
