@@ -18,15 +18,15 @@ def als(train, k, iteration, x_train, lmbu, lmbv , train_X):
     # print(matrix[2,1])
     # unique_user = x_train['reviewerID'].unique()//////////////
     # unique_product = x_train['itemID'].unique()//////////////
-    unique_user = matrix.shape[1]
-    unique_product = matrix.shape[0]
+    unique_user = matrix.shape[0]
+    unique_product = matrix.shape[1]
     # print(unique_user)
     # print(unique_product)
 
     # n = (unique_user.shape[0])
     # m = (unique_product.shape[0])
-    n = unique_user
-    m = unique_product
+    n = 16000
+    m = 100
     print("n:")
     print(n)
     print("m:")
