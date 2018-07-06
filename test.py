@@ -3,7 +3,6 @@ import numpy as np
 b = np.array([[0, 2], [0, 4]])
 a = np.array([[1, 3], [7, 0]])
 
-
 # i = np.where(b == 0)[0]
 # print(i)
 # c = b[i]
@@ -75,23 +74,39 @@ a = np.array([[1, 3], [7, 0]])
 
 
 # file.close()
+#
+# def getKey(item):
+#     return item[0]
+#
+#
+# from operator import itemgetter
+#
+# result = []
+# pair = (11, .51)
+# result.append(pair)
+# pair = (1, .5)
+# result.append(pair)
+# pair = (111, .511)
+# result.append(pair)
+#
+# print(result)
+#
+# result.sort(key=itemgetter(1), reverse=True)
+#
+# print(result[0:2])
+import pandas as pd
+import xlrd
+#
+DataFrame = pd.read_excel("ratings_validate.xlsx", header=None)
+train_X = np.array(DataFrame)
+for i in range(0, train_X.shape[0]):
+    for j in range(0, train_X.shape[1]):
+        if train_X[i, j] == -1:
+            train_X[i, j] = 0
+print(train_X.shape[0])
 
-def getKey(item):
-    return item[0]
+# DataFrame = pd.read_excel("ratings_validate.xlsx", header=None)
+# valid_X = np.array(DataFrame)
 
 
-from operator import itemgetter
-
-result = []
-pair = (11, .51)
-result.append(pair)
-pair = (1, .5)
-result.append(pair)
-pair = (111, .511)
-result.append(pair)
-
-print(result)
-
-result.sort(key=itemgetter(1), reverse=True)
-
-print(result[0:2])
+# print(train_X)
