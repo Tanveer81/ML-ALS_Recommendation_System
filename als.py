@@ -208,7 +208,8 @@ def validation(V, k, train, valid, x_train, x_val, lmbu, lmbv, q):
                 d = 0
             if d > 5:
                 d = 5
-            result.append((j, d))
+            result.append((x_train['reviewerID'][j], d))
+            # result.append(j, d))
         result.sort(key=itemgetter(1), reverse=True)
 
         print("Recommending Products")
